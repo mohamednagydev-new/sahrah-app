@@ -4,7 +4,7 @@
 #   - iOS: the team's App Store Connect integration `appstore-key` (already used by PULSE) + "Automatic code signing";
 #     create the app in App Store Connect with bundle id online.geddo.sahrah, then put its Apple ID in APP_APPLE_ID;
 #   - Android: run the `android-keystore` workflow once, download the keystore it makes, and upload it in
-#     Codemagic → Code signing identities → Android keystores with the reference name `sahrah_upload`.
+#     Codemagic → Code signing identities → Android keystores with the reference name `sahrah`.
 workflows:
   ios-testflight:
     name: سهرة iOS → TestFlight
@@ -57,7 +57,7 @@ workflows:
       node: 22.11.0
       java: 21
       android_signing:
-        - sahrah_upload
+        - sahrah
     triggering:
       events: [tag]
       tag_patterns:
