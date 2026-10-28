@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">سهرة وتسالي</string>
+    <string name="title_activity_main">سهرة وتسالي</string>
+    <string name="package_name">online.geddo.sahrah</string>
+    <string name="custom_url_scheme">online.geddo.sahrah</string>
+</resources>

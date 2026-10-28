@@ -1,0 +1,20 @@
+{
+  "appId": "online.geddo.sahrah",
+  "appName": "سهرة وتسالي",
+  "webDir": "www",
+  "appendUserAgent": "SahrahApp/1.0",
+  "backgroundColor": "#120d24",
+  "server": {
+    "url": "https://sahrah.geddo.online/?utm_source=app&utm_medium=native",
+    "errorPath": "offline.html",
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "allowNavigation": ["sahrah.geddo.online", "sahrah-rooms.geddo.online", "*.geddo.online", "livekit.grand-hub.com"]
+  },
+  "ios": { "scheme": "Sahrah", "contentInset": "never" },
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 1200, "backgroundColor": "#120d24", "showSpinner": false },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#120d24", "overlaysWebView": false }
+  }
+}

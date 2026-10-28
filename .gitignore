@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+android/app/release/
+android/.gradle/
+android/build/
+android/app/build/
+ios/App/build/
+ios/DerivedData/
+.env

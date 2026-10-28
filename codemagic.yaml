@@ -1,0 +1,101 @@
+# Codemagic CI for the «سهرة وتسالي» app (same setup as PULSE in F:\FIT_IT): builds in the cloud, no Mac needed.
+# One-time setup in the Codemagic UI (see README.md):
+#   - add this GitHub repo to the same Codemagic team as PULSE;
+#   - iOS: the team's App Store Connect integration `appstore-key` (already used by PULSE) + "Automatic code signing";
+#     create the app in App Store Connect with bundle id online.geddo.sahrah, then put its Apple ID in APP_APPLE_ID;
+#   - Android: run the `android-keystore` workflow once, download the keystore it makes, and upload it in
+#     Codemagic → Code signing identities → Android keystores with the reference name `sahrah_upload`.
+workflows:
+  ios-testflight:
+    name: سهرة iOS → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: 22.11.0
+      xcode: latest
+      vars:
+        BUNDLE_ID: online.geddo.sahrah
+        XCODE_PROJECT: ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+        APP_APPLE_ID: "0"   # fill in after creating the app in App Store Connect (App Information → Apple ID)
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: online.geddo.sahrah
+    integrations:
+      app_store_connect: appstore-key
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'ios-v*'
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor iOS project
+        script: npx cap sync ios
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Bump build number to App Store Connect latest + 1
+        script: |
+          cd ios/App
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_APPLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+      - name: Build signed .ipa
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+  android-release:
+    name: سهرة Android → Play bundle (.aab)
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      node: 22.11.0
+      java: 21
+      android_signing:
+        - sahrah_upload
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: 'android-v*'
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor Android project
+        script: npx cap sync android
+      - name: Build signed release bundle
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+    # Upload to Play: the first upload must be manual in Play Console (Google's rule). After that, add a Play service
+    # account in Codemagic and uncomment:
+    # publishing:
+    #   google_play:
+    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal
+
+  android-keystore:
+    name: One time — make the Android upload keystore
+    instance_type: linux_x2
+    max_build_duration: 10
+    environment:
+      java: 21
+      vars:
+        KEY_ALIAS: sahrah
+    scripts:
+      - name: Make keystore (passwords are random; written next to the keystore for you to keep)
+        script: |
+          PASS=$(openssl rand -hex 16)
+          keytool -genkeypair -v -keystore sahrah-upload.jks -alias "$KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" -dname "CN=Sahrah, O=Geddo, C=EG"
+          printf 'alias: %s\nstore password: %s\nkey password: %s\n' "$KEY_ALIAS" "$PASS" "$PASS" > sahrah-upload-passwords.txt
+    artifacts:
+      - sahrah-upload.jks
+      - sahrah-upload-passwords.txt
