@@ -44,7 +44,7 @@ mode with suitable questions. No sign-up needed.
 | Form | Answer |
 |---|---|
 | Privacy policy | https://sahrah.geddo.online/privacy |
-| Ads | **No**: the app shows no ads (ads are off inside the app). |
+| Ads | **Yes, the app contains ads** (Google AdMob: an ad between games, and an optional reward video). |
 | App access | All features available without special access. Sign-in is optional; no test account is needed. |
 | Content rating (IARC questionnaire) | Category: Game → Trivia/Quiz. Violence: none. Sexual content: none. Language: none. Controlled substances: none. **Gambling / simulated gambling: No** (no betting, no money, points only). **Users can interact/communicate: Yes**: chat in 1 vs 1 and with friends, filtered (numbers, links and accounts blocked) with report and block. Shares location: No. Digital purchases: No. |
 | Target audience | **13 and over** (13–15, 16–17, 18+). Don't tick under 13: that pulls in the Families program rules. The kids' mode is a feature, not a kids' app. |
@@ -62,7 +62,10 @@ mode with suitable questions. No sign-up needed.
   - **App activity → In-app actions** (games played, answers, scores): purpose analytics and app functionality. Not shared.
   - **Messages → Other in-app messages** (chat with friends/opponents): purpose app functionality. Optional. Kept 30 days.
   - **Device or other IDs**: an anonymous device id for analytics and to keep the player's games. Not shared.
-- **Shared with third parties:** No. (Sign-in is processed by Google/Facebook only when the player chooses it.)
+- **Device or other IDs → Advertising ID**: collected **and shared with Google AdMob** for advertising (and analytics/fraud
+  prevention). Not optional while ads are on. Kids' mode inside the app shows no ads.
+- **Shared with third parties:** only the advertising ID and ad interactions, with Google AdMob. Sign-in data is processed by
+  Google/Facebook only when the player chooses it.
 
 ## Release
 1. Testing → **Internal testing** → Create release → upload the `.aab` from Codemagic → add your email as a tester → roll out.
