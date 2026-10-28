@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
+const IOS = process.env.IOS === '1';   // iPhone 6.7": 1290×2796, raw shots from raw-ios/
+const W = IOS ? 1290 : 1080, H = IOS ? 2796 : 1920, RAW = IOS ? 'raw-ios' : 'raw', OUT = IOS ? 'ios' : 'android';
 const SET = [
   ['01-home', 'home', 'سهرة أسئلة وضحك مع صحابك', 'فرق ضد فرق على موبايل واحد أو أونلاين'],
   ['02-image', 'q-emoji', 'صور وأسئلة عن مصر وأيامها', 'أكل الشارع، الأفلام، الكورة، والتاريخ'],
@@ -13,13 +15,13 @@ const SET = [
   ['05-duel', 'duel-live', '١ ضد ١ مع صاحبك', 'ابعتله لينك، أو العب مع صحاب جداد'],
   ['06-try', 'try', 'جرّب في دقيقة', 'من غير تسجيل، العب على طول'],
 ];
-const css = `@import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Alexandria:wght@500;700&display=swap');
-html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+const css = () => `@import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Alexandria:wght@500;700&display=swap');
+html,body{margin:0;width:${W}px;height:${H}px;overflow:hidden}
 body{background:radial-gradient(120% 60% at 50% 0%,#3a2a8a,#120d24 60%),#120d24;font-family:Alexandria,sans-serif;color:#fff;direction:rtl}
-.wrap{position:absolute;inset:0;display:grid;justify-items:center;align-content:start;padding-top:110px}
-h1{margin:0 60px;font-family:Lalezar,serif;font-weight:400;font-size:92px;line-height:1.15;text-align:center;color:#FFC93C;text-shadow:0 6px 0 #7a4b00}
-p{margin:18px 60px 0;font-size:40px;font-weight:700;text-align:center;color:#E3DDFF}
-.phone{margin-top:70px;width:760px;height:1351px;border-radius:64px;overflow:hidden;border:10px solid #2b2260;box-shadow:0 0 0 3px rgba(255,201,60,.55),0 40px 90px rgba(0,0,0,.6)}
+.wrap{position:absolute;inset:0;display:grid;justify-items:center;align-content:start;padding-top:${IOS ? 190 : 110}px}
+h1{margin:0 60px;font-family:Lalezar,serif;font-weight:400;font-size:${IOS ? 112 : 92}px;line-height:1.15;text-align:center;color:#FFC93C;text-shadow:0 6px 0 #7a4b00}
+p{margin:18px 60px 0;font-size:${IOS ? 48 : 40}px;font-weight:700;text-align:center;color:#E3DDFF}
+.phone{margin-top:${IOS ? 90 : 70}px;width:${IOS ? 900 : 760}px;height:${IOS ? 1950 : 1351}px;border-radius:64px;overflow:hidden;border:10px solid #2b2260;box-shadow:0 0 0 3px rgba(255,201,60,.55),0 40px 90px rgba(0,0,0,.6)}
 .phone img{width:100%;height:100%;object-fit:cover;object-position:top}`;
 const port = 9571; const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 fs.rmSync(path.join(here, '.edge2'), { recursive: true, force: true });
@@ -40,9 +42,9 @@ async function render(html, file, w, h) {
   const r = await send('Page.captureScreenshot', { format: 'png' }, sid); fs.writeFileSync(file, Buffer.from(r.result.data, 'base64'));
 }
 for (const [out, raw, h1, sub] of SET) {
-  const img = pathToFileURL(path.join(here, 'raw', `${raw}.png`)).href;
-  await render(`<!doctype html><html lang="ar"><head><meta charset="utf-8"><style>${css}</style></head><body><div class="wrap"><h1>${h1}</h1><p>${sub}</p><div class="phone"><img src="${img}"></div></div></body></html>`,
-    path.join(here, 'android', `phone-${out}.png`), 1080, 1920);
+  const img = pathToFileURL(path.join(here, RAW, `${raw}.png`)).href;
+  await render(`<!doctype html><html lang="ar"><head><meta charset="utf-8"><style>${css()}</style></head><body><div class="wrap"><h1>${h1}</h1><p>${sub}</p><div class="phone"><img src="${img}"></div></div></body></html>`,
+    path.join(here, OUT, `phone-${out}.png`), W, H);
 }
 const logo = pathToFileURL(path.join(here, '..', 'assets', 'icon-only.png')).href;
 await render(`<!doctype html><html lang="ar"><head><meta charset="utf-8"><style>@import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Alexandria:wght@700&display=swap');

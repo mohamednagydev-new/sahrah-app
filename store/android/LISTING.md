@@ -44,6 +44,7 @@ mode with suitable questions. No sign-up needed.
 | Form | Answer |
 |---|---|
 | Privacy policy | https://sahrah.geddo.online/privacy |
+| Delete account URL (Data safety) | https://sahrah.geddo.online/delete-account |
 | Ads | **Yes, the app contains ads** (Google AdMob: an ad between games, and an optional reward video). |
 | App access | All features available without special access. Sign-in is optional; no test account is needed. |
 | Content rating (IARC questionnaire) | Category: Game → Trivia/Quiz. Violence: none. Sexual content: none. Language: none. Controlled substances: none. **Gambling / simulated gambling: No** (no betting, no money, points only). **Users can interact/communicate: Yes**: chat in 1 vs 1 and with friends, filtered (numbers, links and accounts blocked) with report and block. Shares location: No. Digital purchases: No. |

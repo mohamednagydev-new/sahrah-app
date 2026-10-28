@@ -69,5 +69,8 @@
 	<!-- iOS ads are not turned on yet: this is Google's TEST app id so the SDK never fails at launch. Replace it with the iOS AdMob app id when ads go live on iPhone (the web app only starts ads on Android for now). -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<!-- only standard HTTPS (no custom encryption): Apple export compliance answer, so uploads skip the questionnaire -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

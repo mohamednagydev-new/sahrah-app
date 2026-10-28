@@ -34,7 +34,8 @@ const send = (method, params = {}, sessionId) => new Promise((r) => { const i = 
 const tid = (await send('Target.createTarget', { url: 'about:blank' })).result.targetId;
 const sid = (await send('Target.attachToTarget', { targetId: tid, flatten: true })).result.sessionId;
 await send('Page.enable', {}, sid); await send('Runtime.enable', {}, sid);
-await send('Emulation.setDeviceMetricsOverride', { width: 412, height: 732, deviceScaleFactor: 2.625, mobile: true }, sid);
+const IOS = process.env.IOS === '1';   // iPhone 6.7" store size: 430×932 at 3 = 1290×2796
+await send('Emulation.setDeviceMetricsOverride', IOS ? { width: 430, height: 932, deviceScaleFactor: 3, mobile: true } : { width: 412, height: 732, deviceScaleFactor: 2.625, mobile: true }, sid);
 await send('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36 SahrahApp/1.0' }, sid);
 const ev = async (x) => (await send('Runtime.evaluate', { expression: x, returnByValue: true, awaitPromise: true }, sid)).result?.result?.value;
 await send('Page.navigate', { url: BASE + '/' }, sid); await sleep(3000);
@@ -43,6 +44,6 @@ for (const [name, pg, clicks] of SHOTS) {
   await send('Page.navigate', { url: BASE + pg }, sid); await sleep(6500);
   for (const sel of clicks ?? []) { await ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); e?.click(); return !!e; })()`); await sleep(5500); }
   const r = await send('Page.captureScreenshot', { format: 'png' }, sid);
-  fs.writeFileSync(path.join(here, 'raw', `${name}.png`), Buffer.from(r.result.data, 'base64'));
+  fs.writeFileSync(path.join(here, IOS ? 'raw-ios' : 'raw', `${name}.png`), Buffer.from(r.result.data, 'base64'));
 }
 console.log('done'); edge.kill(); ws.close(); process.exit(0);
