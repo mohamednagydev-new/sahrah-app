@@ -15,3 +15,5 @@ ios/DerivedData/
 store/.edge/
 store/.edge2/
 store/*.jpg
+*.aab
+*.apk
