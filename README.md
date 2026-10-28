@@ -16,7 +16,7 @@ PULSE (`F:\FIT_IT`). Every web deploy updates the app; the stores only see a new
 2. iOS: create the app in App Store Connect (bundle `online.geddo.sahrah`, name «سهرة وتسالي»). Put its Apple ID in
    `APP_APPLE_ID` in `codemagic.yaml`. The `appstore-key` integration and automatic signing are the same as PULSE.
 3. Android: run the `android-keystore` workflow once. Keep the keystore and its passwords safe, outside git. Upload it in
-   Codemagic → Code signing identities → Android keystores as `sahrah_upload`. Create the app in Play Console and upload
+   Codemagic → Code signing identities → Android keystores as `sahrah`. Create the app in Play Console and upload
    the first `.aab` by hand (Google's rule); later uploads can be automatic.
 4. Android app links (optional, opens our links in the app): add `/.well-known/assetlinks.json` on the site with the
    keystore's SHA-256 fingerprint.

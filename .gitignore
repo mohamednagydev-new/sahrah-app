@@ -12,3 +12,6 @@ android/app/build/
 ios/App/build/
 ios/DerivedData/
 .env
+store/.edge/
+store/.edge2/
+store/*.jpg
