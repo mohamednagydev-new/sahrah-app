@@ -72,5 +72,20 @@
 	<!-- only standard HTTPS (no custom encryption): Apple export compliance answer, so uploads skip the questionnaire -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- voice chat with friends in rooms / 1v1 (live only, nothing is recorded) -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>علشان تتكلم بصوتك مع صحابك وانتو بتلعبوا. الصوت بيتنقل مباشرة ومش بيتسجل.</string>
+	<!-- sign-in comes back from Safari as online.geddo.sahrah://auth?t=<one-time token>&next=<path> -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>online.geddo.sahrah.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>online.geddo.sahrah</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

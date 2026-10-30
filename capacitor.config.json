@@ -2,7 +2,7 @@
   "appId": "online.geddo.sahrah",
   "appName": "سهرة وتسالي",
   "webDir": "www",
-  "appendUserAgent": "SahrahApp/1.0",
+  "appendUserAgent": "SahrahApp/1.1",
   "backgroundColor": "#120d24",
   "server": {
     "url": "https://sahrah.geddo.online/?utm_source=app&utm_medium=native",

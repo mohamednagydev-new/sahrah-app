@@ -4,7 +4,10 @@ A Capacitor shell around the live game at https://sahrah.geddo.online, built in 
 PULSE (`F:\FIT_IT`). Every web deploy updates the app; the stores only see a new build when the shell itself changes.
 
 - App id / bundle id: `online.geddo.sahrah`
-- The shell adds «SahrahApp/1.0» to the user agent; the web app uses it to hide «install» prompts inside the app.
+- The shell adds «SahrahApp/1.1» to the user agent (1.0 before); the web app uses it to hide «install» prompts inside the app.
+- Plugins the web page calls through `window.Capacitor.Plugins`: App (deep link `online.geddo.sahrah://auth` back from
+  sign-in), Browser (sign-in in a Custom Tab), Share + Filesystem (share sheet), AdMob. Mic/vibrate permissions since 1.1.
+  What changed in 1.1 and how to release it: `RELEASE-1.1.md`.
 - `www/offline.html` is the «مفيش إنترنت» screen; `assets/` holds the icon/splash sources (`npm run assets` regenerates).
 
 ## Release

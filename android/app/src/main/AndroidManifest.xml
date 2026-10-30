@@ -24,6 +24,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- sign-in comes back from the Custom Tab as online.geddo.sahrah://auth?t=<one-time token>&next=<path> -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="online.geddo.sahrah" android:host="auth" />
+            </intent-filter>
         </activity>
 
         <provider
@@ -38,4 +45,11 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- voice chat in rooms / 1v1 (LiveKit through the web view's getUserMedia; Capacitor's BridgeWebChromeClient asks at run time) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- navigator.vibrate in the games -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- a phone without a mic can still install the app (voice is optional) -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>
