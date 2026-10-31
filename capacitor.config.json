@@ -2,7 +2,7 @@
   "appId": "online.geddo.sahrah",
   "appName": "سهرة وتسالي",
   "webDir": "www",
-  "appendUserAgent": "SahrahApp/1.1",
+  "appendUserAgent": "SahrahApp/1.2",
   "backgroundColor": "#120d24",
   "server": {
     "url": "https://sahrah.geddo.online/?utm_source=app&utm_medium=native",
@@ -15,6 +15,7 @@
   "android": { "allowMixedContent": false },
   "plugins": {
     "SplashScreen": { "launchShowDuration": 1200, "backgroundColor": "#120d24", "showSpinner": false },
-    "StatusBar": { "style": "DARK", "backgroundColor": "#120d24", "overlaysWebView": false }
+    "StatusBar": { "style": "DARK", "backgroundColor": "#120d24", "overlaysWebView": false },
+    "PushNotifications": { "presentationOptions": ["badge", "sound", "alert"] }
   }
 }

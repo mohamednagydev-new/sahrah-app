@@ -13,6 +13,18 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2789932744268807~6444336375"/>
 
+        <!-- phone notifications (1.2, Firebase): our white «?» bubble in the status bar, gold accent, channel «default»
+             (the web page creates it with a name on the first «فعّل»; the server sends android.notification.channel_id = default) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_sahrah" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_accent" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
@@ -50,6 +62,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- navigator.vibrate in the games -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Android 13+: the «Allow notifications» popup (asked only when the player taps «فعّل» for notifications) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- a phone without a mic can still install the app (voice is optional) -->
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

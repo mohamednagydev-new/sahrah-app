@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "19607910718",
+    "project_id": "sahrah-3cea2",
+    "storage_bucket": "sahrah-3cea2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19607910718:android:415ad200a37831e685146f",
+        "android_client_info": {
+          "package_name": "online.geddo.sahrah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKjlUAcQGAX9shQY-RwOkWRjr9ABwYE34"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

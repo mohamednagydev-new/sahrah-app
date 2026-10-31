@@ -4,10 +4,13 @@ A Capacitor shell around the live game at https://sahrah.geddo.online, built in 
 PULSE (`F:\FIT_IT`). Every web deploy updates the app; the stores only see a new build when the shell itself changes.
 
 - App id / bundle id: `online.geddo.sahrah`
-- The shell adds «SahrahApp/1.1» to the user agent (1.0 before); the web app uses it to hide «install» prompts inside the app.
+- The shell adds «SahrahApp/1.2» to the user agent (1.1 / 1.0 before); the web app uses it to hide «install» prompts inside the
+  app and to know which plugins this version ships.
 - Plugins the web page calls through `window.Capacitor.Plugins`: App (deep link `online.geddo.sahrah://auth` back from
   sign-in), Browser (sign-in in a Custom Tab), Share + Filesystem (share sheet), AdMob. Mic/vibrate permissions since 1.1.
-  What changed in 1.1 and how to release it: `RELEASE-1.1.md`.
+  PushNotifications (Firebase phone notifications) since 1.2. What changed and how to release: `RELEASE-1.1.md`, `RELEASE-1.2.md`.
+- `android/app/google-services.json` (Firebase project `sahrah-3cea2`) must be committed: Codemagic builds from git, and
+  without it the build skips the Google services plugin and notifications never arrive. It is not a secret.
 - `www/offline.html` is the «مفيش إنترنت» screen; `assets/` holds the icon/splash sources (`npm run assets` regenerates).
 
 ## Release

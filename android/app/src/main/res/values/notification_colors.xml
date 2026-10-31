@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- notifications: the accent Android paints the small icon / app name with (our gold) -->
+    <color name="notification_accent">#FFC93C</color>
+</resources>
