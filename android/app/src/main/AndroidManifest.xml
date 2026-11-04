@@ -43,6 +43,31 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="online.geddo.sahrah" android:host="auth" />
             </intent-filter>
+            <!-- App Links (1.3): shared sahrah.geddo.online links open in the app (only game pages: never /api, /admin or the sign-in callbacks) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:path="/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/live9" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/duel" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/vs" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/know" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/r/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/f/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/v/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/c/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/q/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/p/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/room" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/try" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/daily" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/weekly" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/league" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/games" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/categories" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/play" />
+            </intent-filter>
         </activity>
 
         <provider
