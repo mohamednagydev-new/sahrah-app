@@ -58,11 +58,17 @@ workflows:
       java: 21
       android_signing:
         - sahrah
+      groups:
+        - facebook   # 1.6: FB_CLIENT_TOKEN (Meta app «سهرة وتسالي» → Settings → Advanced → Client token), secure
     triggering:
       events: [tag]
       tag_patterns:
         - pattern: 'android-v*'
     scripts:
+      - name: Check the Facebook client token
+        script: |
+          # the Facebook SDK crashes at start without a client token: never build an app without it
+          if [ -z "$FB_CLIENT_TOKEN" ]; then echo "FB_CLIENT_TOKEN is missing (Codemagic group 'facebook')"; exit 1; fi
       - name: Install dependencies
         script: npm ci
       - name: Sync Capacitor Android project

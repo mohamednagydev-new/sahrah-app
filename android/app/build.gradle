@@ -9,7 +9,11 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Codemagic sets BUILD_NUMBER: every store build gets a higher code
         versionCode Integer.parseInt(System.getenv("BUILD_NUMBER") ?: "1")
-        versionName "1.5"
+        versionName "1.6"
+        // 1.6: Facebook SDK (install + app-open events for the Meta App Promotion campaign). The app id is public; the client token
+        // comes from the Codemagic environment variable FB_CLIENT_TOKEN (never committed)
+        resValue "string", "facebook_app_id", "1909940596360916"
+        resValue "string", "facebook_client_token", (System.getenv("FB_CLIENT_TOKEN") ?: "")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -49,6 +53,8 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    // 1.6: the Facebook SDK core only (no login, no UI): it starts by itself and logs installs and app opens (AutoLogAppEvents)
+    implementation 'com.facebook.android:facebook-core:17.0.0'
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
