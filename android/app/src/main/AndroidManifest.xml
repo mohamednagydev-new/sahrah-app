@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -12,6 +13,10 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2789932744268807~6444336375"/>
+        <!-- 1.7: Google's documented switches that move the Ads SDK's start-up and ad-loading work off the main thread (fewer
+             ANRs). Harmless where the SDK version already does this by default. -->
+        <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION" android:value="true"/>
+        <meta-data android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING" android:value="true"/>
 
         <!-- 1.6 Facebook SDK (core): app id + client token from build.gradle resValue; it logs the install and app opens by itself, so
              the Meta App Promotion campaign can optimise for installs. No JavaScript touches it. -->
@@ -32,6 +37,10 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="default" />
+        <!-- 1.7: no FCM token work at every app start. Firebase now waits until the web page asks for notifications
+             (PushNotifications.register(), only after the player's «فعّل» tap), which turns auto-init on for that phone
+             (Firebase saves that, so phones that already allowed notifications in 1.2-1.6 keep getting them). -->
+        <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false" />
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
@@ -97,6 +106,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Android 13+: the «Allow notifications» popup (asked only when the player taps «فعّل» for notifications) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 1.7: the app never uses the camera (voice only). Make sure no library ever adds the permission. -->
+    <uses-permission android:name="android.permission.CAMERA" tools:node="remove" />
     <!-- a phone without a mic can still install the app (voice is optional) -->
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 </manifest>

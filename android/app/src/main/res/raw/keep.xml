@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1.7 (shrinkResources): resources that code looks up by NAME (getIdentifier), which the resource shrinker cannot see:
+     the splash (SplashScreen plugin), the notification icon/colour (push plugin + Firebase), the launcher icons, Cordova's
+     config.xml (Capacitor reads it by name) and the FileProvider paths (Share/Filesystem). -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/splash,@drawable/ic_stat_sahrah,@color/notification_accent,@mipmap/ic_launcher*,@drawable/ic_launcher*,@xml/config,@xml/file_paths,@layout/capacitor_*,@layout/no_webview,@layout/activity_main,@string/app_name,@string/title_activity_main,@string/package_name,@string/custom_url_scheme,@string/facebook_*" />

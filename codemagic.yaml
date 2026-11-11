@@ -80,6 +80,9 @@ workflows:
           ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
+      # 1.7 (R8): the code map. It is already packed inside the .aab (Play reads it from there); kept here as a backup to upload
+      # by hand in Play Console → App bundle explorer → Downloads → ReTrace mapping file if Play ever shows unreadable stacks
+      - android/app/build/outputs/mapping/release/mapping.txt
     # Upload to Play: the first upload must be manual in Play Console (Google's rule). After that, add a Play service
     # account in Codemagic and uncomment:
     # publishing:
