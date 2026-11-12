@@ -72,6 +72,12 @@
 
 # ---- Facebook SDK core (1.6): ships consumer rules; quiet the optional parts it references ----
 -dontwarn com.facebook.**
+# 1.8: started by hand (FacebookStart.java) instead of its removed FacebookInitProvider. R8 keeps what our code calls anyway;
+# spelled out so the delayed start (init, activateApp, the lifecycle-tracker replay of the missed first resume) never loses a
+# method to shrinking.
+-keep class com.facebook.FacebookSdk { public static *; }
+-keep class com.facebook.appevents.AppEventsLogger { public static *; }
+-keep class com.facebook.appevents.internal.ActivityLifecycleTracker { public static *; }
 
 # ---- Google Mobile Ads / UMP: ship consumer rules ----
 -dontwarn com.google.android.gms.**

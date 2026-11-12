@@ -1,4 +1,4 @@
-# Release 1.8 (Android): the mic works on more phones, and the page can open the app's settings
+# Release 1.8 (Android): the mic works on more phones, the page can open the app's settings, the app opens faster
 
 Why: the web team's mic investigation (seenjeem-egypt 72bcc5d3, 12 Nov 2026): 98 of 116 phones using voice are in the app, and on
 1.7 10 of 25 phones failed the mic. Part of it was the web (fixed there: one ask per tap). The shell's part:
@@ -32,6 +32,40 @@ What 1.8 changes, compared with 1.7:
 3. R8: explicit keep rules for `SahrahNativePlugin` (+ its two `@PluginMethod`s), `MicPermission` and `MicOnlyChromeClient`
    (the whole `online.geddo.sahrah.**` package was already kept).
 4. User agent `SahrahApp/1.8`, versionName `1.8`, versionCode = max(111, Codemagic BUILD_NUMBER + 100).
+5. **The Facebook SDK starts after the first page, off the main thread** (`FacebookStart.java`, manifest, 13 Nov 2026).
+   Why: Play Console shows startup ANRs since 1.6, the version that added the SDK (`[linker64] __dl_do_dl_iterate_phdr`,
+   `__dl_dlsym_handle_lookup_impl`, `Input dispatching timed out (No focused window)`, plus GPU ones); 1.6 bad-behaviour
+   rate 2.00% vs 0.63% on 1.5. The SDK (facebook-core 17.0.0) started itself in its `FacebookInitProvider`, a ContentProvider
+   that runs `FacebookSdk.sdkInitialize` on the MAIN thread at process start, before the app's window exists (SDK class
+   loading, manifest + shared-preferences disk reads, lifecycle tracking, feature checks).
+   - Manifest: `AutoInitEnabled=false`, `AutoLogAppEventsEnabled=false` (app id, client token, advertiser id unchanged) and
+     the SDK's `com.facebook.internal.FacebookInitProvider` removed (`tools:node="remove"`). Its two token broadcast
+     receivers stay (they only react to login token changes; the app has no Facebook login).
+   - `FacebookStart.startOnce`: the first of (the web view's first page finished, 3 s after `MainActivity.onCreate`), once per
+     process, on a background-priority thread: `FacebookSdk.sdkInitialize(app)` → `setAutoInitEnabled(true)` (=
+     `fullyInitialize()`) → `setAutoLogAppEventsEnabled(true)` (registers the SDK's activity-lifecycle tracker) →
+     `AppEventsLogger.activateApp(app)` (Meta's documented call when auto-logging is off: sends the install ping, starts
+     tracking). Any failure is only logged; the game never needs the SDK.
+   - Install + app open still reach Meta (the campaign's attribution):
+     - install: `activateApp` → `FacebookSdk.publishInstallAsync` → one `MOBILE_APP_INSTALL` per install (the SDK keeps a
+       "ping" timestamp in its prefs; sent again only if it never succeeded). Meta attributes it by advertiser id / anon id
+       and its own Play referrer data, which do not depend on how early in the launch it is sent. A phone that kills the app
+       within ~3 s of the first launch sends it on the next launch (events are not lost, only later).
+     - app open (`fb_mobile_activate_app`): the tracker registers after MainActivity already resumed, so on the main thread
+       `FacebookStart.replayMissedResume` hands it the missed `onActivityCreated` + `onActivityResumed`
+       (`ActivityLifecycleTracker`, public in 17.0.0 "to allow unity sdk to correctly log app events") when MainActivity is
+       on screen and the tracker has not seen it: the same code the lifecycle callback runs, so this launch's app open is
+       logged once and the later pause/stop balance it. Later resumes/backgrounding are tracked normally.
+     - `setAutoInitEnabled` / `setAutoLogAppEventsEnabled` are saved by the SDK; harmless, since nothing starts it early any
+       more.
+   - Still on the main thread at startup (needed there or tiny): `registerPlugin`, Capacitor's `BridgeActivity.onCreate`
+     (creating the WebView, loading plugins: their `load()`s only keep references; AdMob only adds a web message listener),
+     text-zoom cap, the mic chrome client (+ its activity-result launcher), the install source's prefs read (a few bytes; the
+     Play referrer itself is read on a background thread since 1.7), the splash. Before MainActivity, still at process
+     start: Firebase's `FirebaseInitProvider` (`FirebaseApp.initializeApp`, light; the FCM token work waits for
+     `register()` since 1.7; kept because push needs it) and Google Ads' init provider (its start-up work moved off the main
+     thread by the 1.7 `OPTIMIZE_INITIALIZATION` flag; `MobileAds.initialize` runs only when the web asks for an ad).
+   - R8: explicit keep rules for `FacebookSdk`, `AppEventsLogger`, `ActivityLifecycleTracker` public statics.
 
 Web side (seenjeem-egypt master 6e715fee, deployed separately): with app ≥ 1.8, «app.native» on and the plugin present, a tap's
 mic refusal asks `micState()` to choose the help sheet (denied_forever → «افتح المايك» with a gold «⚙️ افتح الإعدادات»;
@@ -40,10 +74,22 @@ prompt → the «اسمح بالمايك» sheet; granted → a short «دوس �
 
 Not changed: everything else from 1.7 (R8, install source, renderer recovery, FCM waiting for register(), camera removed).
 
+Risks of item 5: (a) an existing 1.6/1.7 phone sends one `MOBILE_APP_INSTALL` ping on its first 1.8 start (1.6/1.7 never
+called `activateApp`, so the SDK's ping timestamp is empty); Meta matches it to the same device/anon id, so it should not
+count as a new paid install, but watch Ads Manager installs for a jump right after the rollout. (b) this launch's app open is
+sent up to ~3 s later than before (or on the next launch if the app is closed sooner). (c) the ANRs may also come from the
+web view's own start (GPU traces): compare the ANR rate of 1.8 with 1.7 before drawing conclusions. (d) first compile on
+Codemagic (APIs checked against the facebook-core 17.0.0 source: `FacebookSdk.sdkInitialize(Context)`,
+`setAutoInitEnabled`, `setAutoLogAppEventsEnabled`, `AppEventsLogger.activateApp(Application)`,
+`ActivityLifecycleTracker.isTracking/getCurrentActivity/onActivityCreated/onActivityResumed`).
+
 ## Not compiled locally
 Still no Android SDK / JDK 17 on the laptop (no `java` at all on PATH), so 1.8 compiles for the first time on Codemagic. Watch
 `Build signed release bundle`. The Java uses only APIs already in the project (AndroidX activity-result + core, Capacitor 8
-`Plugin` / `registerPlugin`).
+`Plugin` / `registerPlugin`) plus, for item 5, the facebook-core 17.0.0 calls listed under its risks.
+
+Note (13 Nov): the tag `android-v1.8` was first pushed at 715a330 (mic work only). The Play build must come from the commit
+with item 5 (move the tag or build from a new one); a Codemagic build of 715a330 does NOT contain the Facebook change.
 
 ## Steps (owner)
 1. Review, then push the branch and the tag (only when you decide to publish):
@@ -54,6 +100,8 @@ Still no Android SDK / JDK 17 on the laptop (no `java` at all on PATH), so 1.8 c
    - room / 1 ضد 1: Android asks once, «Allow» → voice works;
    - «Don't allow» twice → the next tap on the mic shows «افتح المايك» with «⚙️ افتح الإعدادات» → it opens the app's settings →
      allow the mic → back in the game the mic opens by itself;
+   - Meta Events Manager → the app «سهرة وتسالي» → Test events (or the overview, it lags up to ~20 min): a fresh install
+     shows the app install and «Activate app»; an app reopened after > 60 s in the background shows another «Activate app»;
    - plus the 1.7 checks: the app opens, sign-in in the Custom Tab and back, «فعّل» notifications + a test push, share, an ad,
      an `https://sahrah.geddo.online/...` link opens inside the app.
 5. Production → Create release → add from library (the same build) → staged rollout 20% → watch Android vitals and
@@ -65,5 +113,6 @@ Copy from `RELEASE-NOTES-1.8-ar.txt` (each line starts with an invisible right-t
 ```
 • المايك في الغرف و«1 ضد 1» بقى يشتغل على موبايلات أكتر
 • لو المايك مقفول على التطبيق، زرار واحد بيفتح إعدادات التطبيق على طول
+• التطبيق بيفتح أسرع
 • تحسينات في الثبات
 ```

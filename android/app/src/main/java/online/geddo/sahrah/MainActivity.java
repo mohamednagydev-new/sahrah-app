@@ -23,6 +23,7 @@ import com.getcapacitor.WebViewListener;
 import java.util.ArrayList;
 
 /**
+ * 1.8: the Facebook SDK starts after the first page (or 3 s), off the main thread (FacebookStart), not at process start.
  * 1.8: mic requests from the page are queued and each one answered exactly once (MicOnlyChromeClient); the SahrahNative plugin
  *      tells the page whether Android will still ask for the mic and opens the app's settings screen.
  * 1.7: web view renderer crash → a fresh web view instead of an app crash; only the microphone is ever granted to the page;
@@ -61,11 +62,19 @@ public class MainActivity extends BridgeActivity {
       public void onPageCommitVisible(WebView view, String url) { pageShown = true; }
 
       @Override
-      public void onPageLoaded(WebView view) { pageShown = true; }
+      public void onPageLoaded(WebView view) {
+        pageShown = true;
+        // 1.8: the first finished page starts the Facebook SDK (in the background)
+        FacebookStart.startOnce(MainActivity.this);
+      }
 
       @Override
       public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) { return rendererGone(view, detail); }
     });
+
+    // 1.8: ... or 3 s after this point if the first page is slower (once per process; see FacebookStart)
+    final Activity self = this;
+    new Handler(Looper.getMainLooper()).postDelayed(() -> FacebookStart.startOnce(self), FacebookStart.FALLBACK_MS);
 
     // the launch link itself was already opened: BridgeActivity.load() hands the launch intent to onNewIntent (before 1.7 it was
     // opened a second time from here)
@@ -88,6 +97,18 @@ public class MainActivity extends BridgeActivity {
       InstallSource.markDelivered(this);
       bridge.getWebView().loadUrl(withSource);
     });
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    FacebookStart.onResume(this);
+  }
+
+  @Override
+  public void onPause() {
+    FacebookStart.onPause(this);
+    super.onPause();
   }
 
   @Override
