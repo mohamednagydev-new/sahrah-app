@@ -48,6 +48,16 @@
 
 # ---- this app ----
 -keep class online.geddo.sahrah.** { *; }
+# 1.8: the SahrahNative plugin (found by Capacitor by its annotation + class name, its methods by name from the web:
+# micState, openAppSettings) and the mic helper the chrome client uses. Already covered by the line above and the plugin
+# rules; spelled out so a future narrowing of that line can't break the web's mic help.
+-keep @com.getcapacitor.annotation.CapacitorPlugin class online.geddo.sahrah.SahrahNativePlugin { *; }
+-keepclassmembers class online.geddo.sahrah.SahrahNativePlugin {
+    @com.getcapacitor.PluginMethod public void micState(com.getcapacitor.PluginCall);
+    @com.getcapacitor.PluginMethod public void openAppSettings(com.getcapacitor.PluginCall);
+}
+-keep class online.geddo.sahrah.MicPermission { *; }
+-keep class online.geddo.sahrah.MainActivity$MicOnlyChromeClient { *; }
 
 # ---- Firebase Cloud Messaging (push): the plugin's MessagingService is kept through the manifest; Firebase ships its own
 #      consumer rules. Kept explicitly anyway: a stripped FCM class would only show up as "no notifications". ----

@@ -24,7 +24,7 @@ import com.android.installreferrer.api.ReferrerDetails;
  *   - gclid : only when the referrer has one (a Google Ads install).
  *   - src=play_referrer : always (marks this landing as the Play install source).
  *   - ref : the raw referrer string, URL-encoded, at most 400 characters.
- *   These replace the usual ?utm_source=app&utm_medium=native of that one load (the user agent still says SahrahApp/1.7).
+ *   These replace the usual ?utm_source=app&utm_medium=native of that one load (the user agent still says SahrahApp/<version>).
  */
 final class InstallSource {
   static final String START = "https://sahrah.geddo.online/";
