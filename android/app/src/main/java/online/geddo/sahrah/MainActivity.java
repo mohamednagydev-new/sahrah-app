@@ -119,7 +119,11 @@ public class MainActivity extends BridgeActivity {
 
   private static boolean isOurLink(Intent intent) {
     Uri u = intent != null ? intent.getData() : null;
-    return u != null && "https".equals(u.getScheme()) && "sahrah.geddo.online".equals(u.getHost());
+    if (u == null || !"https".equals(u.getScheme()) || !"sahrah.geddo.online".equals(u.getHost())) return false;
+    // 1.9: a link handed to the app opens a page of the game, never the site's API or the admin (another app can send any
+    // address of the site straight to this activity, past the manifest's path list)
+    String p = u.getPath();
+    return p == null || !(p.equals("/api") || p.startsWith("/api/") || p.equals("/admin") || p.startsWith("/admin/"));
   }
 
   private boolean openLink(Intent intent) {

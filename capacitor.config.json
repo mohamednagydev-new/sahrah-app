@@ -9,7 +9,7 @@
     "errorPath": "offline.html",
     "androidScheme": "https",
     "iosScheme": "https",
-    "allowNavigation": ["sahrah.geddo.online", "sahrah-rooms.geddo.online", "*.geddo.online", "livekit.grand-hub.com"]
+    "allowNavigation": ["sahrah.geddo.online"]
   },
   "ios": { "scheme": "Sahrah", "contentInset": "never" },
   "android": { "allowMixedContent": false },
