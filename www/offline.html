@@ -7,7 +7,46 @@ body{background:radial-gradient(120% 70% at 50% 0%,#2b1f5c,#0e0b1f 70%);color:#F
 .ic{font-size:64px}
 b{font-size:26px;color:#FFC93C}
 p{margin:0;color:#CFC8F2;line-height:1.7}
+small{color:#9E96C9;font-size:14px;min-height:20px}
 button{margin-top:6px;min-width:200px;min-height:52px;border:0;border-radius:16px;font-size:18px;font-weight:800;color:#2A1A00;background:linear-gradient(180deg,#FFE99A,#FFC93C 55%,#F5A000);box-shadow:0 5px 0 #A86A00}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #A86A00}
 </style></head>
-<body><div class="ic">📡</div><b>مفيش إنترنت دلوقتي</b><p>اتأكد إن الواي فاي أو الداتا شغالين،<br>وبعدين دوس «جرّب تاني».</p>
-<button onclick="location.replace('https://sahrah.geddo.online/?utm_source=app&utm_medium=native')">🔄 جرّب تاني</button></body></html>
+<body><div class="ic">📡</div><b>مفيش إنترنت دلوقتي</b><p>اتأكدوا إن الواي فاي أو الداتا شغالين.<br>أول ما النت يرجع هنكمّل لوحدنا.</p>
+<button id="again">🔄 جرّبوا تاني</button><small id="note"></small>
+<script>
+// The app's offline screen (reliability review 13 Nov 2026 #17): it used to wait for a tap and always open the home page.
+// Now it goes back by itself when the network returns ('online' event + a quiet check every 5 s), to the page that failed when
+// we know it: `?to=` (a path the shell may add), else the page we came from, else home. Only our own site, never another host.
+(function () {
+  var SITE = 'https://sahrah.geddo.online';
+  var HOME = SITE + '/?utm_source=app&utm_medium=native';
+  function target() {
+    try {
+      var to = new URLSearchParams(location.search).get('to');
+      if (to && /^\/(?!\/)[\w\-\/?=&%.]*$/.test(to)) return SITE + to;
+      if (document.referrer && document.referrer.indexOf(SITE + '/') === 0) return document.referrer;
+    } catch (e) { /* fall through */ }
+    return HOME;
+  }
+  var going = false;
+  function go() { if (going) return; going = true; location.replace(target()); }
+  var note = document.getElementById('note');
+  function check() {
+    if (going) return;
+    if (navigator.onLine === false) { note.textContent = ''; return; }
+    note.textContent = 'بنجرّب…';
+    // reachable = the request settles at all (the answer itself is opaque from this page)
+    var done = false;
+    var t = setTimeout(function () { if (!done) { done = true; note.textContent = ''; } }, 4000);
+    fetch(SITE + '/icon.png?net=' + Date.now(), { mode: 'no-cors', cache: 'no-store' })
+      .then(function () { if (!done) { done = true; clearTimeout(t); go(); } })
+      .catch(function () { if (!done) { done = true; clearTimeout(t); note.textContent = ''; } });
+  }
+  window.addEventListener('online', check);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') check(); });
+  setInterval(function () { if (document.visibilityState === 'visible') check(); }, 5000);
+  // the button always tries, even when the phone says «offline» (that flag is sometimes wrong)
+  document.getElementById('again').addEventListener('click', go);
+  setTimeout(check, 1500);
+})();
+</script></body></html>
