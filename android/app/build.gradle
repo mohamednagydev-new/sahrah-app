@@ -11,7 +11,7 @@ android {
         // Codemagic's build number + 100 (10 Nov 2026: Play had already used 8, a code can never be reused; +100 keeps every build above all old uploads)
         // 1.7: never below 110 (1.6 went out as 109 = build 9 + 100); 1.8: never below 111 (1.7 used 110 or more)
         versionCode Math.max(111, Integer.parseInt(System.getenv("BUILD_NUMBER") ?: "1") + 100)
-        versionName "1.8"
+        versionName "1.9"
         // 1.6: Facebook SDK (install + app-open events for the Meta App Promotion campaign). The app id is public; the client token
         // comes from the Codemagic environment variable FB_CLIENT_TOKEN (never committed)
         resValue "string", "facebook_app_id", "1909940596360916"
