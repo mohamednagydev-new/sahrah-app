@@ -2,6 +2,8 @@ package online.geddo.sahrah;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
+import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +25,8 @@ import com.getcapacitor.WebViewListener;
 import java.util.ArrayList;
 
 /**
+ * 2.0: the web view stops drawing while the screen is covered (an AdMob full-screen ad on top, app in the background, screen
+ *      off) and the page hears about low memory (Play: GPU-driver crashes and «Unresponsive GPU» ANRs; see pauseWeb).
  * 1.8: the Facebook SDK starts after the first page (or 3 s), off the main thread (FacebookStart), not at process start.
  * 1.8: mic requests from the page are queued and each one answered exactly once (MicOnlyChromeClient); the SahrahNative plugin
  *      tells the page whether Android will still ask for the mic and opens the app's settings screen.
@@ -39,6 +43,15 @@ public class MainActivity extends BridgeActivity {
   private boolean pageShown = false;
   /** this start opened a shared link: never replace it with the install-source URL */
   private boolean openedLink = false;
+
+  /** 2.0: this activity called webView.onPause() (stopped, or an AdMob ad screen covers it) and has not resumed it yet */
+  private boolean webPaused = false;
+  /** 2.0: AdMob full-screen ad screens alive on top of this activity (created minus destroyed) */
+  private int adScreens = 0;
+  /** 2.0: watches the app's other activities for AdMob's AdActivity (see AdWatch) */
+  private Application.ActivityLifecycleCallbacks adWatch;
+  /** 2.0: last «low memory» event sent to the page (at most one every 30 s) */
+  private long lastLowMemory = 0;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +85,12 @@ public class MainActivity extends BridgeActivity {
       public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) { return rendererGone(view, detail); }
     });
 
+    // 2.0: an AdMob full-screen ad (interstitial / rewarded) is Google's own AdActivity with a TRANSLUCENT theme, so this activity
+    // is only paused under it, never stopped: until 1.9 the web view kept drawing frames behind the ad (two GPU-heavy screens at
+    // once on weak Adreno / Mali phones). Pause it as soon as an ad screen is created on top (see pauseWeb).
+    adWatch = new AdWatch();
+    getApplication().registerActivityLifecycleCallbacks(adWatch);
+
     // 1.8: ... or 3 s after this point if the first page is slower (once per process; see FacebookStart)
     final Activity self = this;
     new Handler(Looper.getMainLooper()).postDelayed(() -> FacebookStart.startOnce(self), FacebookStart.FALLBACK_MS);
@@ -100,8 +119,22 @@ public class MainActivity extends BridgeActivity {
   }
 
   @Override
+  public void onStart() {
+    super.onStart();
+    // 2.0: visible again (back from the background / screen on). Normally onResume follows at once; this covers the cases where it
+    // doesn't (Android 9- split screen with the other app focused, a translucent popup that is still on top) so the page is never
+    // left frozen on screen. Not while an AdMob ad is still on top: the web view stays paused under the ad until onResume.
+    if (adScreens == 0) resumeWeb();
+  }
+
+  @Override
   public void onResume() {
+    // Capacitor's BridgeActivity.onResume → Bridge.onResume → MockCordovaWebViewImpl.handleResume calls webView.onResume() +
+    // resumeTimers() on EVERY resume (Capacitor 8.5), so the web view is already running again after super.onResume().
     super.onResume();
+    // 2.0: safety net only when WE paused it (a later Capacitor might stop doing the above; a web view left paused would be a frozen
+    // app). Chromium ignores onResume() on a web view that isn't paused, so this second call costs nothing.
+    resumeWeb();
     FacebookStart.onResume(this);
   }
 
@@ -109,6 +142,104 @@ public class MainActivity extends BridgeActivity {
   public void onPause() {
     FacebookStart.onPause(this);
     super.onPause();
+    // 2.0: deliberately NOT pausing the web view here. onPause alone (without onStop) also happens under Android's mic / notification
+    // permission popup and the share sheet; hiding the page there would make the web's «back on screen» mic retry (voiceLive.ts)
+    // fire right after a refusal. The AdMob ad screen (also onPause only) is caught by AdWatch instead.
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    // 2.0: the screen is gone (app in the background, screen off, sign-in Custom Tab on top): no web view drawing until it's back
+    pauseWeb();
+  }
+
+  @Override
+  public void onDestroy() {
+    if (adWatch != null) {
+      try { getApplication().unregisterActivityLifecycleCallbacks(adWatch); } catch (Throwable ignored) { }
+      adWatch = null;
+    }
+    super.onDestroy();
+  }
+
+  /**
+   * 2.0 (Play vitals for 1.9: crash 1.72%, ANR 1.57%): the native crashes are in the app's own process while drawing the web view
+   * with the GPU: libhwui SkiaOpenGLPipeline::swapBuffers abort on the RenderThread, SIGSEGV in libGLESv2_adreno via
+   * draw_gl / WebViewFunctor::drawGl (Galaxy A23, Redmi 10C: Snapdragon 680 / Adreno 610), plus «Unresponsive GPU» ANRs (the main
+   * thread waiting for the render thread), and sessions ended abruptly right after an AdMob ad started (rewarded 11%, forced 3.7%,
+   * a plain game end 1.6%). WebView.onPause() is Android's documented call for "this web view is not on screen": Chromium hides the
+   * page (no frames, no requestAnimationFrame, the page's visibilitychange → hidden), pauses animations and geolocation.
+   * It does NOT pause JavaScript, so timers, sockets, AdMob's reward callbacks and push events still reach the page, and it does NOT
+   * stop audio (live voice keeps playing). It is per web view: AdMob's own ad web views are untouched (the global pauseTimers(),
+   * which Capacitor skips with its default KeepRunning=true, would freeze those too and is never called here).
+   */
+  private void pauseWeb() {
+    if (webPaused || bridge == null) return;
+    WebView wv = bridge.getWebView();
+    if (wv == null) return;
+    try {
+      wv.onPause();
+      webPaused = true;
+    } catch (Throwable t) {
+      Logger.warn("Sahrah", "web view pause failed: " + t);
+    }
+  }
+
+  private void resumeWeb() {
+    if (!webPaused) return;
+    webPaused = false;
+    if (bridge == null) return;
+    WebView wv = bridge.getWebView();
+    if (wv == null) return;
+    try { wv.onResume(); } catch (Throwable t) { Logger.warn("Sahrah", "web view resume failed: " + t); }
+  }
+
+  /** 2.0: Google's full-screen ad screen (com.google.android.gms.ads.AdActivity), never one of ours */
+  private boolean isAdScreen(Activity a) {
+    return a != null && a != this && a.getClass().getName().startsWith("com.google.android.gms.ads.");
+  }
+
+  /** 2.0: counts AdMob ad screens and pauses the web view under them; runs on the main thread (Android's lifecycle callbacks) */
+  private final class AdWatch implements Application.ActivityLifecycleCallbacks {
+    @Override public void onActivityCreated(Activity a, Bundle b) { if (isAdScreen(a)) { adScreens++; pauseWeb(); } }
+    @Override public void onActivityResumed(Activity a) { if (isAdScreen(a)) pauseWeb(); }
+    @Override public void onActivityDestroyed(Activity a) { if (isAdScreen(a)) adScreens = Math.max(0, adScreens - 1); }
+    @Override public void onActivityStarted(Activity a) { }
+    @Override public void onActivityPaused(Activity a) { }
+    @Override public void onActivityStopped(Activity a) { }
+    @Override public void onActivitySaveInstanceState(Activity a, Bundle b) { }
+  }
+
+  /**
+   * 2.0: Android says memory is running low while the app is in front → a tiny window event the page can use to drop heavy GPU
+   * resources (3D scenes, big textures): window.addEventListener('sahrahLowMemory', e => e.level) with level 'low' | 'critical'.
+   * Native → page only (the page never calls native for it), only after the first page showed, at most once every 30 s, never
+   * while the web view is paused. A page that doesn't listen ignores it. (Android 14+ no longer sends the RUNNING_* levels to
+   * apps; onLowMemory still comes.)
+   */
+  @Override
+  @SuppressWarnings("deprecation")
+  public void onTrimMemory(int level) {
+    super.onTrimMemory(level);
+    if (level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) tellWebLowMemory("critical");
+    else if (level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) tellWebLowMemory("low");
+  }
+
+  @Override
+  public void onLowMemory() {
+    super.onLowMemory();
+    tellWebLowMemory("critical");
+  }
+
+  private void tellWebLowMemory(String level) {
+    try {
+      if (!pageShown || webPaused || bridge == null || bridge.getWebView() == null) return;
+      long now = SystemClock.elapsedRealtime();
+      if (lastLowMemory != 0 && now - lastLowMemory < 30_000) return;
+      lastLowMemory = now;
+      bridge.triggerWindowJSEvent("sahrahLowMemory", "{\"level\":\"" + level + "\"}");
+    } catch (Throwable ignored) { }
   }
 
   @Override
