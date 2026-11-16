@@ -9,6 +9,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 /**
  * 1.8: the app's own tiny bridge for the web page's mic help (registered in MainActivity before the bridge starts).
@@ -26,6 +27,22 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  */
 @CapacitorPlugin(name = "SahrahNative")
 public class SahrahNativePlugin extends Plugin {
+
+  /** 2.1 (RT5): the page tells Firebase Analytics about one of OUR app events (Google Ads imports it as a conversion). Only the
+   *  names below; no parameters, nothing personal. Never throws: without Firebase it just answers logged=false. */
+  private static final java.util.Set<String> EVENTS = new java.util.HashSet<>(java.util.Arrays.asList("first_game_done"));
+
+  @PluginMethod
+  public void logEvent(PluginCall call) {
+    JSObject ret = new JSObject();
+    String name = call.getString("name", "");
+    boolean ok = false;
+    if (name != null && EVENTS.contains(name)) {
+      try { FirebaseAnalytics.getInstance(getContext()).logEvent(name, null); ok = true; } catch (Throwable t) { ok = false; }
+    }
+    ret.put("logged", ok);
+    call.resolve(ret);
+  }
 
   @PluginMethod
   public void micState(PluginCall call) {
