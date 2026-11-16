@@ -68,7 +68,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="online.geddo.sahrah" android:host="auth" />
             </intent-filter>
-            <!-- App Links (1.3): shared sahrah.geddo.online links open in the app (only game pages: never /api, /admin or the sign-in callbacks) -->
+            <!-- App Links (1.3): shared sahrah.geddo.online links open in the app (only game pages: never /api, /admin or the sign-in callbacks).
+                 2.1 (16 Nov 2026, owner: a شلة invite from WhatsApp opened the browser): + /s/ (شلة invites), /clubs, /friends, /shella, /masr, /dawry, /prizes, /how-to-play -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -92,6 +93,14 @@
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/games" />
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/categories" />
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/play" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/s/" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/clubs" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/friends" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/shella" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/masr" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/dawry" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/prizes" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/how-to-play" />
             </intent-filter>
         </activity>
 
