@@ -69,7 +69,7 @@
                 <data android:scheme="online.geddo.sahrah" android:host="auth" />
             </intent-filter>
             <!-- App Links (1.3): shared sahrah.geddo.online links open in the app (only game pages: never /api, /admin or the sign-in callbacks).
-                 2.1 (16 Nov 2026, owner: a شلة invite from WhatsApp opened the browser): + /s/ (شلة invites), /clubs, /friends, /shella, /masr, /dawry, /prizes, /how-to-play -->
+                 2.1 (16 Nov 2026, owner: a شلة invite from WhatsApp opened the browser): + /s/ (شلة invites), /clubs, /friends, /shella, /masr, /dawry, /prizes, /how-to-play, /dorak («دورك يا صاحبي» turns, shared on WhatsApp) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -101,6 +101,7 @@
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/dawry" />
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/prizes" />
                 <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/how-to-play" />
+                <data android:scheme="https" android:host="sahrah.geddo.online" android:pathPrefix="/dorak" />
             </intent-filter>
         </activity>
 
